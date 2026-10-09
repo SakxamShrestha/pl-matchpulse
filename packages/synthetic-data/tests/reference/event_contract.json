@@ -1,0 +1,28 @@
+{
+  "_comment": "Immutable event schema contract. The generator must emit events matching this shape. Agent-readable, agent-NEVER-writable: changing the contract to fit the generator is the cheating move this file exists to prevent.",
+  "required_fields": {
+    "match_id": "str",
+    "period": "int (1 or 2)",
+    "clock_s": "int, seconds elapsed within the period, 0..2700+",
+    "team": "str, one of the two team ids for the match",
+    "player_id": "str",
+    "type": "str, one of event_types",
+    "x": "float, 0.0..105.0, pitch length, attacking left-to-right for the acting team",
+    "y": "float, 0.0..68.0, pitch width",
+    "outcome": "str, one of outcomes"
+  },
+  "event_types": [
+    "pass", "carry", "shot", "goal", "tackle", "interception",
+    "clearance", "foul", "save", "goal_kick", "throw_in", "corner", "pressure"
+  ],
+  "outcomes": ["success", "failure", "neutral"],
+  "invariants": [
+    "every event has all required_fields present and correctly typed",
+    "period is 1 or 2",
+    "clock_s is non-negative and monotonically non-decreasing within a (match_id, period)",
+    "x within [0, 105], y within [0, 68]",
+    "exactly two distinct team ids per match_id",
+    "every 'goal' event is immediately preceded by a 'shot' event by the same team in the same match",
+    "no event type outside event_types, no outcome outside outcomes"
+  ]
+}

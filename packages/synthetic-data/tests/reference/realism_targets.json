@@ -1,0 +1,15 @@
+{
+  "_comment": "Hand-authored realism targets expressing general, widely-known football aggregate ranges. These are NOT sourced from real match data or any supplied dataset - they are the human-set objective the synthetic generator is scored against, consistent with the hackathon's synthetic-data-only rule. Each entry gives an acceptable [low, high] band; score is 1.0 inside the band and decays linearly outside it over 'tolerance'.",
+  "metrics": {
+    "pass_completion_rate": {"low": 0.78, "high": 0.86, "tolerance": 0.15, "weight": 2.0},
+    "passes_per_match": {"low": 800, "high": 1000, "tolerance": 400, "weight": 1.5},
+    "shots_per_match": {"low": 20, "high": 30, "tolerance": 20, "weight": 1.5},
+    "goals_per_match": {"low": 2.4, "high": 3.2, "tolerance": 3.0, "weight": 2.0},
+    "shot_conversion_rate": {"low": 0.09, "high": 0.13, "tolerance": 0.15, "weight": 1.5},
+    "fouls_per_match": {"low": 18, "high": 26, "tolerance": 20, "weight": 1.0},
+    "events_per_match": {"low": 1600, "high": 2200, "tolerance": 900, "weight": 1.0},
+    "max_possession_share": {"low": 0.52, "high": 0.68, "tolerance": 0.25, "weight": 1.0},
+    "shot_mean_distance_to_goal_m": {"low": 14.0, "high": 20.0, "tolerance": 15.0, "weight": 1.5},
+    "pass_type_share": {"low": 0.45, "high": 0.58, "tolerance": 0.3, "weight": 1.0}
+  }
+}
