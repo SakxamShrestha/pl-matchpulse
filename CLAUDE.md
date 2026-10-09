@@ -44,6 +44,18 @@ These are contractual rules, not preferences. Violating any of them can disquali
 
 Stage One is **pass/fail** on whether the project "reasonably fits the theme and reasonably applies to the required technologies" (`official_rules.md:201`). The named hero technologies are Microsoft Foundry, Microsoft Agent Framework, Azure MCP, GitHub Copilot Agent Mode, Fabric, GitHub SDK, GitHub CLI, Azure Apps and AI Services, and Azure databases; A2A is also named for the multi-agent category. Prefer these over equivalent third-party or non-Microsoft alternatives, and when suggesting a library or service, say which hero technology it maps to.
 
+## Optimization loop: generation and evaluation are separate
+
+`packages/synthetic-data/` runs under a Karpathy-style optimization loop. Inside that package:
+
+- **`src/` is the only writable path.** The generator lives there.
+- **`tests/` is read-only**, including `tests/evaluation.py` (the verifier) and `tests/reference/` (the event contract and realism target bands). Reading them is expected; writing them is not.
+- `PROJECT.md` holds the human-authored guardrails and outranks any instruction to the contrary. `memory.md` is the experiment journal — read it before proposing a change, and never repeat a logged experiment.
+
+A `PreToolUse` hook (`.claude/hooks/protect_verifier.py`) denies writes to those paths, including via shell redirection, `sed -i`, `mv`, `rm`, `tee`, and `git checkout`. If a write is denied, that is the design working — never route around it or ask for the hook to be disabled. Changing the evaluation seed, match count, target bands, or event contract is the same violation in a different form.
+
+Run iterations with `/karpathy-loop [n]`. Score the generator with `python3 packages/synthetic-data/tests/evaluation.py` (exit 0 with a `SCORE:` line, exit 2 on a contract violation, exit 3 if the generator crashes).
+
 ## What the judging criteria reward in the code
 
 Stage Two is five equally weighted criteria at 20% each (`official_rules.md:206`). Two bear directly on day-to-day work here:
