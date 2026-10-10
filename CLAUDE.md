@@ -10,7 +10,9 @@ Full rules: @hackathon_rules/official_rules.md
 
 ## Stack: target, not yet installed
 
-This is the intended stack. **None of it is set up yet** — there is no `pyproject.toml`, no `node_modules`, no Azure resources, and the only Python on this machine is 3.9.6. Do not write imports against these libraries or config for these services as though they exist; scaffold a piece first, or ask.
+This is the intended stack. **Almost none of it is wired up yet** — there is no `pyproject.toml`, no `node_modules`, and no Azure resources. Do not write imports against these libraries or config for these services as though they exist; scaffold a piece first, or ask.
+
+Already on the machine: Python 3.12.7 (`/opt/anaconda3/bin/python3.12`), `uv`, `node` v22, `gh`. Missing and needed for the Azure path: `az`, `docker`.
 
 - **Python 3.11+** — backend, agents, and the synthetic data pipeline.
 - **FastAPI** — HTTP and streaming surface.
@@ -48,7 +50,8 @@ These are contractual rules, not preferences. Violating any of them can disquali
 
 - **Synthetic data only.** No real match footage or match data. The organizers distribute none; all data must be self-sourced synthetic, football-realistic data, with rights held for anything used (`official_rules.md:168-170`). Never add real Premier League footage, datasets, or scraped match feeds. Events follow a **self-authored schema** — `packages/synthetic-data/tests/reference/event_contract.json`. Commercial providers' schemas may inform its *shape*, but never name one as a source and never install their data: those packages ship real match data, which is exactly what this rule forbids.
 - **New code only.** Everything must be newly created after the Registration Period began (Sep 29, 2026). Do not import pre-existing project code (`official_rules.md:131`).
-- **Public GitHub repository is mandatory** for the entry to be considered (`official_rules.md:149`). The local git repository exists; **no remote is configured yet**, so creating the public GitHub repo is still an open required step.
+- **Public GitHub repository is mandatory** for the entry to be considered (`official_rules.md:149`). Satisfied: `github.com/SakxamShrestha/pl-matchpulse`, public.
+- **Registration closes October 20, 2026, 12:00 pm Pacific** (`official_rules.md:11`) — a week before the submission deadline. Submitting a project does not register the team; these are separate gates.
 - **Judges must be able to run it free of charge** and without restriction until the Judging Period ends (Nov 10, 2026). If access is gated, login credentials must ship in the testing instructions (`official_rules.md:174-176`).
 - **Demo video under two minutes**, hosted at a public URL (YouTube, Vimeo, Facebook Video, or Youku), showing the project actually functioning. Judges are not required to watch past 2:00 (`official_rules.md:141-147`).
 - **All submission materials in English**, or with English translations (`official_rules.md:180`).
@@ -63,7 +66,7 @@ Stage One is **pass/fail** on whether the project "reasonably fits the theme and
 `packages/synthetic-data/` runs under a Karpathy-style optimization loop. Inside that package:
 
 - **`src/` is the only writable path.** The generator lives there.
-- **`tests/` is read-only**, including `tests/evaluation.py` (the verifier) and `tests/reference/` (the event contract and realism target bands). Reading them is expected; writing them is not.
+- **`packages/synthetic-data/tests/` is read-only**, including `evaluation.py` (the verifier) and `reference/` (the event contract and realism target bands). Reading them is expected; writing them is not. Other packages' test suites are ordinary writable files — write tests there freely.
 - `PROJECT.md` holds the human-authored guardrails and outranks any instruction to the contrary. `memory.md` is the experiment journal — read it before proposing a change, and never repeat a logged experiment.
 
 A `PreToolUse` hook (`.claude/hooks/protect_verifier.py`) denies writes to those paths, including via shell redirection, `sed -i`, `mv`, `rm`, `tee`, and `git checkout`. If a write is denied, that is the design working — never route around it or ask for the hook to be disabled. Changing the evaluation seed, match count, target bands, or event contract is the same violation in a different form.

@@ -27,10 +27,14 @@ import sys
 from typing import List
 
 # Paths the loop must never modify.
+#
+# Scoped to the one package that is under an optimization loop, deliberately: an
+# unanchored `tests/` pattern denies writes to every other package's test suite,
+# and this project needs ordinary tests far more than it needs a guard that wide.
+# Add another alternation here when a second module goes under a loop.
 PROTECTED = re.compile(
-    r"(?:^|/)tests(?:/|$)"  # the tests directory itself, or anything inside it
-    r"|(?:^|/)evaluation\.py$"
-    r"|(?:^|/)PROJECT\.md$"
+    r"packages/synthetic-data/tests(?:/|$)"
+    r"|packages/synthetic-data/PROJECT\.md$"
 )
 
 WRITE_TOOLS = {"Write", "Edit", "NotebookEdit"}
