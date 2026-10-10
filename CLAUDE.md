@@ -17,8 +17,9 @@ Already on the machine: Python 3.12.7 (`/opt/anaconda3/bin/python3.12`), `uv`, `
 - **Python 3.11+** — backend, agents, and the synthetic data pipeline.
 - **FastAPI** — HTTP and streaming surface.
 - **Microsoft Agent Framework** for agent orchestration, and **Azure MCP** for tool exposure. Use Agent Framework, not Semantic Kernel: the rules name Agent Framework twice and Semantic Kernel not at all, and Stage One is pass/fail on hero-technology fit.
-- **Azure Cosmos DB** and **Azure AI Search** — state and retrieval.
-- **Next.js** — frontend for the Render and Personalize stages. Use the current major version; do not pin to an old one.
+- **Server-Sent Events** from FastAPI for the overlay stream — not WebSocket, not Azure Web PubSub, not SignalR. Every client-to-server action here (set persona, locale, club, player, focus metric) is a one-shot idempotent POST, so duplex buys nothing. Web PubSub and SignalR also cap the free tier at 20,000 messages per day, which a one-event-per-second demo exhausts in about 5.5 hours — a silent death during the Oct 27 to Nov 10 judging window. Keep the overlay schema transport-agnostic so a Web PubSub publisher stays a drop-in swap.
+- **State:** in-process plus a SQLite or JSON snapshot. Cosmos DB and Azure AI Search are deliberately out of scope for this timeline.
+- **Vite + React + TypeScript** — frontend for the Render and Personalize stages. Not Next.js: this UI has no routes, no SEO need, and no server-side fetching, while a permanently ticking clock is the canonical source of hydration errors. Build to static assets and serve them from FastAPI via `StaticFiles`, so there is one origin, no CORS, and one deployable to keep alive.
 
 Update this section as each piece actually lands, and add the real build/test/lint commands here the moment they exist.
 
@@ -48,7 +49,7 @@ For the Multi-Agent category, judges assess whether "specialized agents have dis
 
 These are contractual rules, not preferences. Violating any of them can disqualify the entry.
 
-- **Synthetic data only.** No real match footage or match data. The organizers distribute none; all data must be self-sourced synthetic, football-realistic data, with rights held for anything used (`official_rules.md:168-170`). Never add real Premier League footage, datasets, or scraped match feeds. Events follow a **self-authored schema** — `packages/synthetic-data/tests/reference/event_contract.json`. Commercial providers' schemas may inform its *shape*, but never name one as a source and never install their data: those packages ship real match data, which is exactly what this rule forbids.
+- **Synthetic data only.** `official_rules.md:169` states plainly that "Projects must use synthetic, football-realistic data" — that part is absolute. Footage is a separate question: the same clause permits footage you have licensed, and only says the organizers distribute none. We nonetheless use **no real football footage at all**, because `official_rules.md:151` bars third-party trademarks from the demo video and real match video carries club crests, kit marks, sponsor boards and a broadcaster bug. Visuals come from our own rendered synthetic pitch view. Never add real Premier League footage, datasets, or scraped match feeds. Events follow a **self-authored schema** — `packages/synthetic-data/tests/reference/event_contract.json`. Commercial providers' schemas may inform its *shape*, but never name one as a source and never install their data: those packages ship real match data, which is exactly what this rule forbids.
 - **New code only.** Everything must be newly created after the Registration Period began (Sep 29, 2026). Do not import pre-existing project code (`official_rules.md:131`).
 - **Public GitHub repository is mandatory** for the entry to be considered (`official_rules.md:149`). Satisfied: `github.com/SakxamShrestha/pl-matchpulse`, public.
 - **Registration closes October 20, 2026, 12:00 pm Pacific** (`official_rules.md:11`) — a week before the submission deadline. Submitting a project does not register the team; these are separate gates.
@@ -70,6 +71,10 @@ Stage One is **pass/fail** on whether the project "reasonably fits the theme and
 - `PROJECT.md` holds the human-authored guardrails and outranks any instruction to the contrary. `memory.md` is the experiment journal — read it before proposing a change, and never repeat a logged experiment.
 
 A `PreToolUse` hook (`.claude/hooks/protect_verifier.py`) denies writes to those paths, including via shell redirection, `sed -i`, `mv`, `rm`, `tee`, and `git checkout`. If a write is denied, that is the design working — never route around it or ask for the hook to be disabled. Changing the evaluation seed, match count, target bands, or event contract is the same violation in a different form.
+
+### Pitch-view guardrail
+
+The pitch view is **ball, trail, and action arrow only. Zero player sprites.** The event contract carries x/y for the acting player alone, with no 22-player tracking, so drawing a team requires inventing a formation model — which has no completion condition, always looks subtly wrong to anyone who watches football, and is the single most likely way to lose two unplanned days. If team shape is wanted, it is one agent-authored polygon the renderer fills. This rule holds even when the pitch looks empty.
 
 Run iterations with `/karpathy-loop [n]`. Score the generator with `python3 packages/synthetic-data/tests/evaluation.py` (exit 0 with a `SCORE:` line, exit 2 on a contract violation, exit 3 if the generator crashes).
 
